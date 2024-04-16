@@ -50,6 +50,7 @@ kotlin {
             implementation(libs.koin)
             implementation(libs.apollo)
             implementation(libs.sqlDelight.runtime)
+            implementation(libs.sqlDelight.coroutines.extentions)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

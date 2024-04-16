@@ -1,4 +1,5 @@
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,9 +17,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
@@ -25,14 +30,16 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExtendedFloatingActionButton
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,12 +83,17 @@ import theme.AppTheme
 @Composable
 @Preview
 fun App(
-    usersScreenState: UsersScreenState= UsersScreenState(),
-    onEvent: (UsersAction) -> Unit={}
+    state: CountryScreenState,
+    onEvent: (CountriesAction) -> Unit={},
+    gridCount: Int=1,
+    scrollBar:@Composable (state:LazyGridState)->Unit={}
 ) {
     AppTheme {
-        UsersScreen(
-            usersScreenState, onEvent
+        CountryScreen(
+            countryScreenState = state,
+            onEvent = onEvent,
+            gridCount = gridCount,
+            scrollBar = scrollBar
         )
     }
 }
@@ -89,30 +101,30 @@ fun App(
 @Composable
 fun UsersScreen(
     usersScreenState: UsersScreenState=UsersScreenState(),
-    onEvent:(UsersAction)->Unit={}
+    onEvent:(UsersAction)->Unit={},
+    showScrollBar:Boolean=false
 ) {
     var showAddUserDialog by remember { mutableStateOf(false) }
+    val lazyListState= rememberLazyListState()
 
     Scaffold(modifier = Modifier.fillMaxSize(),
         floatingActionButton = {
-            ExtendedFloatingActionButton(
+            FloatingActionButton(
                 onClick = {
                           showAddUserDialog=!showAddUserDialog
                 },
-                icon = {
-                    Icon(imageVector = Icons.Default.Add,contentDescription = null)
-                },
-                text = {
-                    Text(text = "Add new user")
-                }
-            )
+                backgroundColor = AppTheme.colorScheme.primary,
+                contentColor = AppTheme.colorScheme.onPrimary
+            ){
+                Icon(imageVector = Icons.Default.Add,contentDescription = null)
+            }
         },
         contentColor = AppTheme.colorScheme.onBackground,
         backgroundColor = AppTheme.colorScheme.background){
         Box(modifier = Modifier.fillMaxSize()
             .padding(it)){
 
-            LazyColumn(modifier = Modifier.fillMaxSize()){
+            LazyColumn(modifier = Modifier.fillMaxSize(), state = lazyListState){
                 items(items = usersScreenState.users, key = {user->
                     user.id
                 }){user->
@@ -120,7 +132,9 @@ fun UsersScreen(
                         user = user,
                         modifier = Modifier.clickable {
                             onEvent(UsersAction.SelectUser(user.id))
-                        }
+                        },
+                        showDelete = true,
+                        onEvent = onEvent
                     )
                 }
             }
@@ -140,6 +154,13 @@ fun UsersScreen(
                     onDismiss = {onEvent(UsersAction.DismissDialog)}
                 )
             }
+
+//            AnimatedVisibility(showScrollBar){
+//                VerticalScrollbar(
+//                    adapter = rememberScrollbarAdapter(lazyListState),
+//                    modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight()
+//                )
+//            }
         }
     }
 }
@@ -243,19 +264,36 @@ fun AddUserDialog(
 @Composable
 fun UserItem(
     user: User,
-    modifier: Modifier=Modifier) {
-    Column(modifier = modifier.fillMaxWidth()
-        .padding(vertical = 10.dp),
-        verticalArrangement = Arrangement.Center){
+    modifier: Modifier=Modifier,
+    showDelete:Boolean=false,
+    onEvent: (UsersAction) -> Unit={}) {
+    Row(modifier = modifier
+        .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier
+            .padding(vertical = 10.dp, horizontal = 8.dp)
+            .weight(1f),
+            verticalArrangement = Arrangement.Center){
 
-        Text(text = "Id is ${user.id}", fontSize = 20.sp)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Name is ${user.name}", fontSize = 20.sp)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Address is "+user.address, fontSize = 20.sp)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Age is "+user.age.toString(), fontSize = 20.sp)
-        Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Id is ${user.id}", fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Name is ${user.name}", fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Address is "+user.address, fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Age is "+user.age.toString(), fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        AnimatedVisibility(visible = showDelete){
+            IconButton(onClick = {
+                onEvent(UsersAction.DeleteUser(user.id))
+            }){
+                Icon(imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = AppTheme.colorScheme.primary)
+            }
+        }
     }
 }
 
@@ -263,24 +301,32 @@ fun UserItem(
 fun CountryScreen(
     countryScreenState: CountryScreenState= CountryScreenState() ,
     onEvent:(CountriesAction)->Unit={},
-    gridCount:Int=1
+    gridCount:Int=1,
+    scrollBar:@Composable (state:LazyGridState)->Unit={},
 ) {
+    val lazyListState= rememberLazyGridState()
+
     Box(modifier = Modifier
         .fillMaxSize()
         .background(color = AppTheme.colorScheme.background)){
         if (countryScreenState.isLoading){
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }else{
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(gridCount),
-                modifier = Modifier.fillMaxSize()
-            ){
-                items(items = countryScreenState.countries){country->
-                    SingleCountry(simpleCountry = country,
-                        modifier = Modifier
-                            .padding(15.dp)
-                            .clickable { onEvent(CountriesAction.SelectCountry(country.code))})
+            Row(modifier = Modifier.fillMaxSize()){
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(gridCount),
+                    modifier = Modifier.fillMaxHeight()
+                        .weight(1f),
+                    state = lazyListState
+                ){
+                    items(items = countryScreenState.countries){country->
+                        SingleCountry(simpleCountry = country,
+                            modifier = Modifier
+                                .padding(15.dp)
+                                .clickable { onEvent(CountriesAction.SelectCountry(country.code))})
+                    }
                 }
+                scrollBar(lazyListState)
             }
         }
 
@@ -293,6 +339,7 @@ fun CountryScreen(
                     .background(AppTheme.colorScheme.background)
                     .padding(16.dp))
         }
+
     }
 }
 

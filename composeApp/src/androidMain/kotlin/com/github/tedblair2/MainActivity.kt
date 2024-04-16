@@ -26,8 +26,8 @@ class MainActivity : ComponentActivity() {
             val usersScreenState by usersViewModel.usersState.collectAsState()
 
             App(
-                usersScreenState = usersScreenState,
-                onEvent = usersViewModel::onEvent
+                state = countryScreenState,
+                onEvent = countriesViewModel::onEvent
             )
         }
     }
@@ -36,5 +36,5 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    App()
+
 }

@@ -1,12 +1,21 @@
 
+import androidx.compose.foundation.ScrollbarStyle
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import di.commonModule
 import di.desktopModule
 import org.koin.core.context.startKoin
 import org.koin.java.KoinJavaComponent.inject
+import theme.AppTheme
 
 fun main() = application {
     startKoin {
@@ -27,8 +36,24 @@ fun main() = application {
         exitApplication()
     }, title = "FirstMultiplatform") {
         App(
-            usersScreenState = usersScreenState,
-            onEvent = usersController::onEvent
+            state = countryScreenState,
+            onEvent = countryController::onEvent,
+            gridCount = 3,
+            scrollBar = {
+                VerticalScrollbar(
+                    adapter = rememberScrollbarAdapter(it),
+                    modifier = Modifier.fillMaxHeight()
+                        .padding(end = 4.dp),
+                    style = ScrollbarStyle(
+                        thickness = 12.dp,
+                        shape = RoundedCornerShape(18.dp),
+                        minimalHeight = 100.dp,
+                        hoverColor = AppTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+                        unhoverColor = AppTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                        hoverDurationMillis = 1000
+                    )
+                )
+            }
         )
     }
 }

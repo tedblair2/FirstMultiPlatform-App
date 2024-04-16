@@ -3,6 +3,8 @@ package di
 import com.apollographql.apollo3.ApolloClient
 import com.github.tedblair2.db.AppDatabase
 import org.koin.dsl.module
+import service.AppCoroutineContext
+import service.AppCoroutineContextImpl
 import service.AppStore
 import service.CountryService
 import service.CountryServiceImpl
@@ -19,6 +21,9 @@ val commonModule= module {
             .serverUrl("https://countries.trevorblades.com/graphql")
             .build()
     }
+    single<AppCoroutineContext>{
+        AppCoroutineContextImpl()
+    }
     single<CountryService>{
         CountryServiceImpl(get())
     }
@@ -26,6 +31,6 @@ val commonModule= module {
         AppDatabase(get())
     }
     single<UserService>{
-        UserServiceImpl(get())
+        UserServiceImpl(get(),get())
     }
 }

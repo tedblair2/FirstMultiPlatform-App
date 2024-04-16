@@ -61,8 +61,9 @@ class UsersViewModel(
         when(action){
             UsersAction.GetUsers->{
                 viewModelScope.launch {
-                    val users=userService.getUsers()
-                    dispatch(UsersAction.UsersList(users))
+                    userService.getUsers().collect{users->
+                        dispatch(UsersAction.UsersList(users))
+                    }
                 }
                 action
             }
@@ -84,8 +85,6 @@ class UsersViewModel(
                         age = age.toInt()
                     )
                     userService.addUser(user)
-                    val newAction=UsersAction.GetUsers
-                    dispatch(newAction)
                 }
                 action
             }
@@ -93,6 +92,12 @@ class UsersViewModel(
                 viewModelScope.launch {
                     val user=userService.getUser(action.id)
                     dispatch(UsersAction.SelectedUser(user))
+                }
+                action
+            }
+            is UsersAction.DeleteUser->{
+                viewModelScope.launch {
+                    userService.deleteUser(action.id)
                 }
                 action
             }

@@ -1,7 +1,6 @@
 
 import event.UsersAction
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
@@ -11,6 +10,7 @@ import kotlinx.coroutines.launch
 import model.AppState
 import model.User
 import model.UsersScreenState
+import service.AppCoroutineContext
 import service.Dispatch
 import service.MiddleWare
 import service.Reducer
@@ -19,10 +19,11 @@ import service.UserService
 
 class UsersController(
     store: Store,
+    appCoroutineContext: AppCoroutineContext,
     private val userService: UserService
 ) {
 
-    private val controllerScope= CoroutineScope(Dispatchers.IO+ SupervisorJob())
+    private val controllerScope= CoroutineScope(appCoroutineContext.io+ SupervisorJob())
     private var dispatch:Dispatch?=null
     val usersState=store.getCurrentState { dispatch=it }
         .map { it.usersScreenState }
@@ -63,8 +64,9 @@ class UsersController(
         when(action){
             UsersAction.GetUsers->{
                 controllerScope.launch {
-                    val users=userService.getUsers()
-                    dispatch(UsersAction.UsersList(users))
+                    userService.getUsers().collect{users->
+                        dispatch(UsersAction.UsersList(users))
+                    }
                 }
                 action
             }
@@ -86,8 +88,6 @@ class UsersController(
                         age = age.toInt()
                     )
                     userService.addUser(user)
-                    val newAction= UsersAction.GetUsers
-                    dispatch(newAction)
                 }
                 action
             }
@@ -95,6 +95,12 @@ class UsersController(
                 controllerScope.launch {
                     val user=userService.getUser(action.id)
                     dispatch(UsersAction.SelectedUser(user))
+                }
+                action
+            }
+            is UsersAction.DeleteUser->{
+                controllerScope.launch {
+                    userService.deleteUser(action.id)
                 }
                 action
             }

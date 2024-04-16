@@ -15,4 +15,5 @@ sealed interface UsersAction:Action {
     data class SelectUser(val id:Int):UsersAction
     data class SelectedUser(val user: User?):UsersAction
     data object DismissDialog:UsersAction
+    data class DeleteUser(val id:Int):UsersAction
 }

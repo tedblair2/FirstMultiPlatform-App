@@ -42,6 +42,7 @@ apollo= {module="com.apollographql.apollo3:apollo-runtime",version.ref="apollo-v
 sqlDelight-runtime={module="app.cash.sqldelight:runtime",version.ref="sql-delight-version"}
 sqlDelight-android-driver={module="app.cash.sqldelight:android-driver",version.ref="sql-delight-version"}
 sqlDelight-jvm-driver={module="app.cash.sqldelight:sqlite-driver",version.ref="sql-delight-version"}
+sqlDelight-coroutines-extentions={module="app.cash.sqldelight:coroutines-extensions",version.ref="sql-delight-version"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

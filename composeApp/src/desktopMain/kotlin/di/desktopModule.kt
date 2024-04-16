@@ -21,6 +21,6 @@ val desktopModule= module {
         driver
     }
     single {
-        UsersController(get(),get())
+        UsersController(get(),get(),get())
     }
 }

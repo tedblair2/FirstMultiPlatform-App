@@ -17,3 +17,6 @@ DELETE FROM users;
 
 getUser:
 SELECT * FROM users WHERE id=?;
+
+deleteUser:
+DELETE FROM users WHERE id=?;
