@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.apollo.plugin)
+    alias(libs.plugins.sqlDelight.plugin)
 }
 
 apollo {
@@ -35,6 +36,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.koin.compose)
+            implementation(libs.sqlDelight.android.driver)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -47,9 +49,11 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.koin)
             implementation(libs.apollo)
+            implementation(libs.sqlDelight.runtime)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
+            implementation(libs.sqlDelight.jvm.driver)
         }
     }
 }
@@ -99,3 +103,12 @@ compose.desktop {
         }
     }
 }
+
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("com.github.tedblair2.db")
+        }
+    }
+}
+

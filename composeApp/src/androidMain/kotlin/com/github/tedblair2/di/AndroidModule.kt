@@ -1,7 +1,12 @@
 package com.github.tedblair2.di
 
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.github.tedblair2.db.AppDatabase
 import com.github.tedblair2.viewmodel.AppViewModel
 import com.github.tedblair2.viewmodel.CountriesViewModel
+import com.github.tedblair2.viewmodel.UsersViewModel
+import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
@@ -11,5 +16,11 @@ val androidModule= module {
     }
     viewModel{
         CountriesViewModel(get(),get())
+    }
+    single<SqlDriver>{
+        AndroidSqliteDriver(AppDatabase.Schema,androidApplication().applicationContext,"multiplatform.db")
+    }
+    viewModel {
+        UsersViewModel(get(),get())
     }
 }

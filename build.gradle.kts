@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.jetbrainsCompose) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.apollo.plugin) apply false
+    alias(libs.plugins.sqlDelight.plugin) apply false
 }

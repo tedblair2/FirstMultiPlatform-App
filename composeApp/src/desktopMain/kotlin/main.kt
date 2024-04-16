@@ -15,8 +15,10 @@ fun main() = application {
 
     val controller:AppController by inject(AppController::class.java)
     val countryController:CountryController by inject(CountryController::class.java)
+    val usersController:UsersController by inject(UsersController::class.java)
     val counterState by controller.counterState.collectAsState()
     val countryScreenState by countryController.countryState.collectAsState()
+    val usersScreenState by usersController.usersState.collectAsState()
 
     Window(onCloseRequest = {
         controller.onCleared()
@@ -24,9 +26,8 @@ fun main() = application {
         exitApplication()
     }, title = "FirstMultiplatform") {
         App(
-            countryScreenState = countryScreenState,
-            onEvent = countryController::onEvent,
-            gridCount = 3
+            usersScreenState = usersScreenState,
+            onEvent = usersController::onEvent
         )
     }
 }

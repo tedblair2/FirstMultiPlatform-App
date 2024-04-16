@@ -13,16 +13,26 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ExtendedFloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,13 +41,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import event.CounterAction
 import event.CountriesAction
+import event.UsersAction
 import firstmultiplatform.composeapp.generated.resources.Res
 import firstmultiplatform.composeapp.generated.resources.eg
 import firstmultiplatform.composeapp.generated.resources.fr
@@ -54,20 +65,197 @@ import model.Country
 import model.CountryScreenState
 import model.DetailedCountry
 import model.SimpleCountry
+import model.User
+import model.UsersScreenState
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import theme.AppTheme
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 @Preview
 fun App(
-    countryScreenState: CountryScreenState= CountryScreenState() ,
-    onEvent:(CountriesAction)->Unit={},
-    gridCount: Int=1
+    usersScreenState: UsersScreenState= UsersScreenState(),
+    onEvent: (UsersAction) -> Unit={}
 ) {
-    MaterialTheme {
-        CountryScreen(countryScreenState, onEvent,gridCount)
+    AppTheme {
+        UsersScreen(
+            usersScreenState, onEvent
+        )
+    }
+}
+
+@Composable
+fun UsersScreen(
+    usersScreenState: UsersScreenState=UsersScreenState(),
+    onEvent:(UsersAction)->Unit={}
+) {
+    var showAddUserDialog by remember { mutableStateOf(false) }
+
+    Scaffold(modifier = Modifier.fillMaxSize(),
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = {
+                          showAddUserDialog=!showAddUserDialog
+                },
+                icon = {
+                    Icon(imageVector = Icons.Default.Add,contentDescription = null)
+                },
+                text = {
+                    Text(text = "Add new user")
+                }
+            )
+        },
+        contentColor = AppTheme.colorScheme.onBackground,
+        backgroundColor = AppTheme.colorScheme.background){
+        Box(modifier = Modifier.fillMaxSize()
+            .padding(it)){
+
+            LazyColumn(modifier = Modifier.fillMaxSize()){
+                items(items = usersScreenState.users, key = {user->
+                    user.id
+                }){user->
+                    UserItem(
+                        user = user,
+                        modifier = Modifier.clickable {
+                            onEvent(UsersAction.SelectUser(user.id))
+                        }
+                    )
+                }
+            }
+            if (showAddUserDialog){
+                AddUserDialog(
+                    usersScreenState = usersScreenState,
+                    onEvent = onEvent,
+                    onDismiss = {
+                        showAddUserDialog=false
+                    }
+                )
+            }
+
+            if (usersScreenState.selectedUser != null){
+                UserDetailsDialog(
+                    user = usersScreenState.selectedUser,
+                    onDismiss = {onEvent(UsersAction.DismissDialog)}
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun UserDetailsDialog(
+    user: User,
+    modifier: Modifier=Modifier,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss){
+        UserItem(user, modifier.clip(RoundedCornerShape(8.dp))
+            .background(AppTheme.colorScheme.background))
+    }
+}
+
+@Composable
+fun AddUserDialog(
+    usersScreenState: UsersScreenState,
+    onEvent: (UsersAction) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss){
+        Column(modifier = Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(AppTheme.colorScheme.background),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally){
+
+            OutlinedTextField(
+                value = usersScreenState.name,
+                onValueChange = {
+                    onEvent(UsersAction.UpdateName(it))
+                },
+                label = {
+                    Text(text = "Enter name")
+                },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = AppTheme.colorScheme.onBackground,
+                    backgroundColor = AppTheme.colorScheme.background,
+                    cursorColor = AppTheme.colorScheme.primary,
+                    focusedLabelColor = AppTheme.colorScheme.primary,
+                    unfocusedLabelColor = AppTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    focusedIndicatorColor = AppTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = AppTheme.colorScheme.onBackground
+                )
+            )
+            OutlinedTextField(
+                value = usersScreenState.address,
+                onValueChange = {
+                    onEvent(UsersAction.UpdateAddress(it))
+                },
+                label = {
+                    Text(text = "Enter address")
+                },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = AppTheme.colorScheme.onBackground,
+                    backgroundColor = AppTheme.colorScheme.background,
+                    cursorColor = AppTheme.colorScheme.primary,
+                    focusedLabelColor = AppTheme.colorScheme.primary,
+                    unfocusedLabelColor = AppTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    focusedIndicatorColor = AppTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = AppTheme.colorScheme.onBackground
+                )
+            )
+            OutlinedTextField(
+                value = usersScreenState.age,
+                onValueChange = {
+                    onEvent(UsersAction.UpdateAge(it))
+                },
+                label = {
+                    Text(text = "Enter age")
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number
+                ),
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = AppTheme.colorScheme.onBackground,
+                    backgroundColor = AppTheme.colorScheme.background,
+                    cursorColor = AppTheme.colorScheme.primary,
+                    focusedLabelColor = AppTheme.colorScheme.primary,
+                    unfocusedLabelColor = AppTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    focusedIndicatorColor = AppTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = AppTheme.colorScheme.onBackground
+                )
+            )
+            Button(onClick = {
+                onEvent(UsersAction.AddUser)
+                onDismiss()
+                onEvent(UsersAction.ResetValues)
+            }, colors = ButtonDefaults.buttonColors(
+                backgroundColor = AppTheme.colorScheme.primary,
+                contentColor = AppTheme.colorScheme.onPrimary
+            )){
+                Text(text = "Add User")
+            }
+        }
+    }
+}
+
+@Composable
+fun UserItem(
+    user: User,
+    modifier: Modifier=Modifier) {
+    Column(modifier = modifier.fillMaxWidth()
+        .padding(vertical = 10.dp),
+        verticalArrangement = Arrangement.Center){
+
+        Text(text = "Id is ${user.id}", fontSize = 20.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = "Name is ${user.name}", fontSize = 20.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = "Address is "+user.address, fontSize = 20.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = "Age is "+user.age.toString(), fontSize = 20.sp)
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
@@ -77,7 +265,9 @@ fun CountryScreen(
     onEvent:(CountriesAction)->Unit={},
     gridCount:Int=1
 ) {
-    Box(modifier = Modifier.fillMaxSize()){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(color = AppTheme.colorScheme.background)){
         if (countryScreenState.isLoading){
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }else{
@@ -92,14 +282,6 @@ fun CountryScreen(
                             .clickable { onEvent(CountriesAction.SelectCountry(country.code))})
                 }
             }
-//            LazyColumn(modifier = Modifier.fillMaxSize()) {
-//                items(items = countryScreenState.countries){country->
-//                    SingleCountry(simpleCountry = country,
-//                        modifier = Modifier
-//                            .padding(15.dp)
-//                            .clickable { onEvent(CountriesAction.SelectCountry(country.code))})
-//                }
-//            }
         }
 
         if (countryScreenState.selectedCountry != null){
@@ -108,7 +290,7 @@ fun CountryScreen(
                 onDismiss = {onEvent(CountriesAction.DismissDialog)},
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
-                    .background(Color.White)
+                    .background(AppTheme.colorScheme.background)
                     .padding(16.dp))
         }
     }
@@ -124,17 +306,24 @@ fun DetailedCountry(
         Column (modifier = modifier.fillMaxWidth()) {
             Row (modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically){
-                Text(text = detailedCountry.emoji, fontSize = 30.sp)
+                Text(text = detailedCountry.emoji,
+                    fontSize = 30.sp,
+                    color = AppTheme.colorScheme.onBackground)
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(text = detailedCountry.name, fontSize = 24.sp)
+                Text(text = detailedCountry.name, fontSize = 24.sp,
+                    color = AppTheme.colorScheme.onBackground)
             }
-            Text(text = "Continent: ${detailedCountry.continent}")
+            Text(text = "Continent: ${detailedCountry.continent}",
+                color = AppTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "Capital: ${detailedCountry.capital}")
+            Text(text = "Capital: ${detailedCountry.capital}",
+                color = AppTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "Currency: ${detailedCountry.currency}")
+            Text(text = "Currency: ${detailedCountry.currency}",
+                color = AppTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "Language(s): ${detailedCountry.languages}")
+            Text(text = "Language(s): ${detailedCountry.languages}",
+                color = AppTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(6.dp))
         }
     }
@@ -146,13 +335,16 @@ fun SingleCountry(
     simpleCountry: SimpleCountry
 ) {
     Row(modifier = modifier.fillMaxWidth()) {
-        Text(text = simpleCountry.emoji, fontSize = 30.sp)
+        Text(text = simpleCountry.emoji, fontSize = 30.sp,
+            color = AppTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center) {
-            Text(text = simpleCountry.name, fontSize = 22.sp)
+            Text(text = simpleCountry.name, fontSize = 22.sp,
+                color = AppTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = simpleCountry.capital)
+            Text(text = simpleCountry.capital,
+                color = AppTheme.colorScheme.onBackground)
         }
     }
 }
