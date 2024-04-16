@@ -23,6 +23,7 @@ fun main() = application {
     Window(onCloseRequest = {
         controller.onCleared()
         countryController.onCleared()
+        usersController.onCleared()
         exitApplication()
     }, title = "FirstMultiplatform") {
         App(
