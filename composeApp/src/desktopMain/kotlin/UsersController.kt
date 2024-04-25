@@ -11,25 +11,25 @@ import model.AppState
 import model.User
 import model.UsersScreenState
 import service.AppCoroutineContext
-import service.Dispatch
-import service.MiddleWare
-import service.Reducer
-import service.Store
 import service.UserService
+import store.Dispatch
+import store.MiddleWare
+import store.Reducer
+import store.Store
 
 class UsersController(
-    store: Store,
-    appCoroutineContext: AppCoroutineContext,
+    store: Store ,
+    appCoroutineContext: AppCoroutineContext ,
     private val userService: UserService
 ) {
 
     private val controllerScope= CoroutineScope(appCoroutineContext.io+ SupervisorJob())
-    private var dispatch:Dispatch?=null
+    private var dispatch: Dispatch?=null
     val usersState=store.getCurrentState { dispatch=it }
         .map { it.usersScreenState }
         .stateIn(controllerScope, SharingStarted.WhileSubscribed(5000), UsersScreenState())
 
-    private val usersReducer:Reducer<UsersScreenState> = { old , action ->
+    private val usersReducer: Reducer<UsersScreenState> = { old , action ->
         when(action){
             is UsersAction.UsersList->{
                 old.copy(users = action.users)
@@ -56,11 +56,11 @@ class UsersController(
         }
     }
 
-    private val appReducer:Reducer<AppState> = { old , action ->
+    private val appReducer: Reducer<AppState> = { old , action ->
         old.copy(usersScreenState = usersReducer(old.usersScreenState,action))
     }
 
-    private val middleWare:MiddleWare = {state, action, dispatch, next ->
+    private val middleWare: MiddleWare = { state , action , dispatch , next ->
         when(action){
             UsersAction.GetUsers->{
                 controllerScope.launch {
@@ -73,7 +73,6 @@ class UsersController(
             UsersAction.DeleteUsers->{
                 controllerScope.launch {
                     userService.deleteAllUsers()
-                    dispatch(UsersAction.UsersList(emptyList()))
                 }
                 action
             }

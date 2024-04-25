@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.apollo.plugin)
     alias(libs.plugins.sqlDelight.plugin)
+    alias(libs.plugins.kotlin.serialization.plugin)
 }
 
 apollo {
@@ -43,14 +44,28 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material)
             implementation(compose.ui)
+            implementation(compose.animation)
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.kotlinx.datetime)
             implementation(libs.koin)
+            implementation(libs.koin.compose.multi)
             implementation(libs.apollo)
             implementation(libs.sqlDelight.runtime)
             implementation(libs.sqlDelight.coroutines.extentions)
+            implementation(libs.decompose)
+            implementation(libs.decompose.jetbrains.extentions)
+            implementation(libs.kotlin.serialization)
+            //precompose navigation
+            implementation(libs.precompose)
+            implementation(libs.precompose.viewmodel)
+            implementation(libs.precompose.koin)
+            //voyager navigation libs
+            implementation(libs.voyager.navigator)
+            implementation(libs.voyager.screenModel)
+            implementation(libs.voyager.koin)
+            implementation(libs.voyager.transitions)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

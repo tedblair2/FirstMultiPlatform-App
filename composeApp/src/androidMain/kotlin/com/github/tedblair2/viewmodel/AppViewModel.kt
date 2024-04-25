@@ -10,23 +10,23 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import model.AppState
 import model.CounterState
-import service.Dispatch
-import service.MiddleWare
-import service.Reducer
-import service.Store
+import store.Dispatch
+import store.MiddleWare
+import store.Reducer
+import store.Store
 
 class AppViewModel(
-    store:Store
+    store: Store
 ):ViewModel() {
 
-    private var dispatch:Dispatch?=null
+    private var dispatch: Dispatch?=null
     val counterState=store.getCurrentState(subscriber = {
         dispatch=it
     })
         .map { it.counterState }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CounterState())
 
-    private val middleWare:MiddleWare = { state,action,dispatch,next->
+    private val middleWare: MiddleWare = { state , action , dispatch , next->
         when(action){
             CounterAction.LoadData->{
                 viewModelScope.launch {
@@ -40,7 +40,7 @@ class AppViewModel(
         }
     }
 
-    private val counterReducer:Reducer<CounterState> = {old,action->
+    private val counterReducer: Reducer<CounterState> = { old , action->
         when(action){
             CounterAction.Decrement->old.copy(count = old.count-1)
             CounterAction.Increment->old.copy(count = old.count+1)
@@ -49,7 +49,7 @@ class AppViewModel(
         }
     }
 
-    private val appReducer:Reducer<AppState> ={ old , action ->
+    private val appReducer: Reducer<AppState> ={ old , action ->
         old.copy(counterState = counterReducer(old.counterState,action))
     }
 

@@ -1,4 +1,4 @@
-package service
+package store
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,11 +41,11 @@ class AppStore : Store {
         return appState
     }
 
-    private fun applyMiddleWares(action: Action):Action{
+    private fun applyMiddleWares(action: Action): Action {
         return next(0)(appState.value,action,::dispatch)
     }
 
-    private fun next(index:Int):Next{
+    private fun next(index:Int): Next {
         if (index==middleWares.size){
             return {_,action,_->action}
         }

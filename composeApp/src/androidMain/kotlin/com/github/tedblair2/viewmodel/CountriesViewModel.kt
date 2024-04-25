@@ -10,22 +10,22 @@ import kotlinx.coroutines.launch
 import model.AppState
 import model.CountryScreenState
 import service.CountryService
-import service.Dispatch
-import service.MiddleWare
-import service.Reducer
-import service.Store
+import store.Dispatch
+import store.MiddleWare
+import store.Reducer
+import store.Store
 
 class CountriesViewModel(
-    store: Store,
+    store: Store ,
     private val countryService: CountryService
 ): ViewModel() {
 
-    private var dispatch:Dispatch?=null
+    private var dispatch: Dispatch?=null
     val countryState=store.getCurrentState(subscriber = {dispatch=it})
         .map { it.countryScreenState }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CountryScreenState())
 
-    private val reducer:Reducer<CountryScreenState> = {old, action ->
+    private val reducer: Reducer<CountryScreenState> = { old , action ->
         when(action){
             is CountriesAction.CountriesResult->{
                 old.copy(countries = action.list,isLoading = false)
@@ -40,11 +40,11 @@ class CountriesViewModel(
         }
     }
 
-    private val appStateReducer:Reducer<AppState> = { old , action ->
+    private val appStateReducer: Reducer<AppState> = { old , action ->
         old.copy(countryScreenState = reducer(old.countryScreenState,action))
     }
 
-    private val middleWare:MiddleWare = {state, action, dispatch, next ->
+    private val middleWare: MiddleWare = { state , action , dispatch , next ->
         when(action){
             CountriesAction.GetCountries->{
                 viewModelScope.launch {

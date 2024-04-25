@@ -8,11 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
+import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.github.tedblair2.viewmodel.AppViewModel
 import com.github.tedblair2.viewmodel.CountriesViewModel
 import com.github.tedblair2.viewmodel.UsersViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
+@OptIn(ExperimentalDecomposeApi::class)
 class MainActivity : ComponentActivity() {
 
     private val viewModel:AppViewModel by viewModel()
@@ -24,11 +26,7 @@ class MainActivity : ComponentActivity() {
             val counterState by viewModel.counterState.collectAsState()
             val countryScreenState by countriesViewModel.countryState.collectAsState()
             val usersScreenState by usersViewModel.usersState.collectAsState()
-
-            App(
-                state = countryScreenState,
-                onEvent = countriesViewModel::onEvent
-            )
+            App()
         }
     }
 }

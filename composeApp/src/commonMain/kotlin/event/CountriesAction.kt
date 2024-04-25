@@ -2,7 +2,7 @@ package event
 
 import model.DetailedCountry
 import model.SimpleCountry
-import service.Action
+import store.Action
 
 sealed interface CountriesAction: Action {
     data object GetCountries:CountriesAction

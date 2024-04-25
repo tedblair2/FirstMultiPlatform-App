@@ -37,7 +37,9 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
@@ -53,6 +55,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.transitions.SlideTransition
 import event.CounterAction
 import event.CountriesAction
 import event.UsersAction
@@ -77,24 +81,263 @@ import model.UsersScreenState
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import sqlDelight.events.AddUserEvents
+import sqlDelight.events.UsersScreenActions
+import sqlDelight.model.AddUserScreenState
+import sqlDelight.model.SqlUsersScreenState
 import theme.AppTheme
+import voyager.screen.HomeScreen
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 @Preview
-fun App(
-    state: CountryScreenState,
-    onEvent: (CountriesAction) -> Unit={},
-    gridCount: Int=1,
-    scrollBar:@Composable (state:LazyGridState)->Unit={}
-) {
+fun App() {
     AppTheme {
-        CountryScreen(
-            countryScreenState = state,
-            onEvent = onEvent,
-            gridCount = gridCount,
-            scrollBar = scrollBar
-        )
+        Navigator(HomeScreen()){
+            SlideTransition(it)
+        }
+    }
+
+//    PreComposeApp {
+//        val navigator= rememberNavigator()
+//        AppTheme {
+//            NavHost(
+//                navigator = navigator,
+//                initialRoute = ScreenRoutes.Home.route,
+//                navTransition = NavTransition()
+//            ){
+//                scene(route = ScreenRoutes.Home.route){
+//                    val viewModel= koinViewModel(SqlUsersViewModel::class)
+//                    val state by viewModel.sqlUsersScreenState.collectAsState()
+//
+//                    SqlUsersScreen(
+//                        sqlUsersScreenState = state,
+//                        onEvent = viewModel::onEvent,
+//                        onNavigateToAdd = {
+//                            navigator.navigate(ScreenRoutes.AddUser.route)
+//                        }
+//                    )
+//                }
+//                scene(route = ScreenRoutes.AddUser.route){
+//                    val viewModel= koinViewModel(AddUserViewModel::class)
+//                    val state by viewModel.addUserScreenState.collectAsState()
+//
+//                    AddSqlUserScreen(
+//                        addUserScreenState = state,
+//                        onEvent = viewModel::onEvent,
+//                        onNavigateUp = {
+//                            navigator.goBack()
+//                        }
+//                    )
+//                }
+//            }
+//        }
+//    }
+//    AppTheme {
+//        Children(
+//            stack = childStack,
+//            animation = stackAnimation(slide())
+//        ){child->
+//            when(val instance=child.instance){
+//                is HomeComponent.ChildScreens.Users->{
+//                    val screenComponent=instance.usersComponent
+//                    val sqlUsersScreenState by screenComponent.state.collectAsState()
+//                    SqlUsersScreen(
+//                        sqlUsersScreenState = sqlUsersScreenState,
+//                        onEvent = screenComponent::onEvent
+//                    )
+//                }
+//                is HomeComponent.ChildScreens.AddUser->{
+//                    val screenComponent=instance.addUserComponent
+//                    val addUserScreenState by screenComponent.state.collectAsState()
+//                    AddSqlUserScreen(
+//                        addUserScreenState = addUserScreenState,
+//                        onEvent = screenComponent::onEvent
+//                    )
+//                }
+//            }
+//        }
+//    }
+}
+
+@Composable
+fun SqlUsersScreen(
+    sqlUsersScreenState: SqlUsersScreenState,
+    onEvent:(UsersScreenActions)->Unit={},
+    onNavigateToAdd:()->Unit
+) {
+    val lazyListState= rememberLazyListState()
+    Scaffold(modifier = Modifier.fillMaxSize(),
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {onNavigateToAdd()},
+                backgroundColor = AppTheme.colorScheme.primary,
+                contentColor = AppTheme.colorScheme.onPrimary
+            ){
+                Icon(imageVector = Icons.Default.Add,contentDescription = null)
+            }
+        },
+        contentColor = AppTheme.colorScheme.onBackground,
+        backgroundColor = AppTheme.colorScheme.background){
+        Box(modifier = Modifier.fillMaxSize()
+            .padding(it)){
+
+            LazyColumn(modifier = Modifier.fillMaxSize(), state = lazyListState){
+                items(items = sqlUsersScreenState.users, key = {user->
+                    user.id
+                }){user->
+                    SqlUserItem(
+                        user = user,
+                        showDelete = true,
+                        onEvent = onEvent
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun SqlUserItem(
+    modifier: Modifier=Modifier,
+    user: User,
+    onEvent: (UsersScreenActions) -> Unit={},
+    showDelete: Boolean=false
+) {
+    Row(modifier = modifier
+        .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier
+            .padding(vertical = 10.dp, horizontal = 8.dp)
+            .weight(1f),
+            verticalArrangement = Arrangement.Center){
+
+            Text(text = "Id is ${user.id}", fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Name is ${user.name}", fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Address is "+user.address, fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Age is "+user.age.toString(), fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        AnimatedVisibility(visible = showDelete){
+            IconButton(onClick = {
+                onEvent(UsersScreenActions.DeleteUser(user.id))
+            }){
+                Icon(imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = AppTheme.colorScheme.primary)
+            }
+        }
+    }
+}
+
+@Composable
+fun AddSqlUserScreen(
+    addUserScreenState: AddUserScreenState,
+    onEvent: (AddUserEvents) -> Unit,
+    onNavigateUp:()->Unit
+) {
+    Scaffold(modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title={
+                    Text(text = "Add User",
+                        color = AppTheme.colorScheme.onPrimary)
+                },
+                navigationIcon = {
+                    IconButton(onClick = { onNavigateUp() }){
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack ,
+                            contentDescription = null,
+                            tint = AppTheme.colorScheme.onPrimary)
+                    }
+                },
+                backgroundColor = AppTheme.colorScheme.primary,
+                contentColor = AppTheme.colorScheme.onPrimary
+            )
+        },
+        backgroundColor = AppTheme.colorScheme.background,
+        contentColor = AppTheme.colorScheme.onBackground) {paddingValues->
+        Column(
+            modifier = Modifier.fillMaxSize()
+                .padding(paddingValues)
+                .background(AppTheme.colorScheme.background),
+            verticalArrangement = Arrangement.Center ,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            OutlinedTextField(
+                value = addUserScreenState.name ,
+                onValueChange = {
+                    onEvent(AddUserEvents.UpdateName(it))
+                } ,
+                label = {
+                    Text(text = "Enter name")
+                } ,
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = AppTheme.colorScheme.onBackground ,
+                    backgroundColor = AppTheme.colorScheme.background ,
+                    cursorColor = AppTheme.colorScheme.primary ,
+                    focusedLabelColor = AppTheme.colorScheme.primary ,
+                    unfocusedLabelColor = AppTheme.colorScheme.onBackground.copy(alpha = 0.6f) ,
+                    focusedIndicatorColor = AppTheme.colorScheme.primary ,
+                    unfocusedIndicatorColor = AppTheme.colorScheme.onBackground
+                )
+            )
+            OutlinedTextField(
+                value = addUserScreenState.address ,
+                onValueChange = {
+                    onEvent(AddUserEvents.UpdateAddress(it))
+                } ,
+                label = {
+                    Text(text = "Enter address")
+                } ,
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = AppTheme.colorScheme.onBackground ,
+                    backgroundColor = AppTheme.colorScheme.background ,
+                    cursorColor = AppTheme.colorScheme.primary ,
+                    focusedLabelColor = AppTheme.colorScheme.primary ,
+                    unfocusedLabelColor = AppTheme.colorScheme.onBackground.copy(alpha = 0.6f) ,
+                    focusedIndicatorColor = AppTheme.colorScheme.primary ,
+                    unfocusedIndicatorColor = AppTheme.colorScheme.onBackground
+                )
+            )
+            OutlinedTextField(
+                value = addUserScreenState.age ,
+                onValueChange = {
+                    onEvent(AddUserEvents.UpdateAge(it))
+                } ,
+                label = {
+                    Text(text = "Enter age")
+                } ,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number
+                ) ,
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = AppTheme.colorScheme.onBackground ,
+                    backgroundColor = AppTheme.colorScheme.background ,
+                    cursorColor = AppTheme.colorScheme.primary ,
+                    focusedLabelColor = AppTheme.colorScheme.primary ,
+                    unfocusedLabelColor = AppTheme.colorScheme.onBackground.copy(alpha = 0.6f) ,
+                    focusedIndicatorColor = AppTheme.colorScheme.primary ,
+                    unfocusedIndicatorColor = AppTheme.colorScheme.onBackground
+                )
+            )
+            Button(
+                onClick = {
+                    onEvent(AddUserEvents.SaveUserToDb)
+                    onEvent(AddUserEvents.ResetValues)
+                } , colors = ButtonDefaults.buttonColors(
+                    backgroundColor = AppTheme.colorScheme.primary ,
+                    contentColor = AppTheme.colorScheme.onPrimary
+                )
+            ) {
+                Text(text = "Add User")
+            }
+        }
     }
 }
 
@@ -339,7 +582,6 @@ fun CountryScreen(
                     .background(AppTheme.colorScheme.background)
                     .padding(16.dp))
         }
-
     }
 }
 

@@ -1,9 +1,9 @@
 package event
 
 import model.User
-import service.Action
+import store.Action
 
-sealed interface UsersAction:Action {
+sealed interface UsersAction: Action {
     data object GetUsers:UsersAction
     data class UsersList(val users:List<User>):UsersAction
     data class UpdateName(val name:String):UsersAction

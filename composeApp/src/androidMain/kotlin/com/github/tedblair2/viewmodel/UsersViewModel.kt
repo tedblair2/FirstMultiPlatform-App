@@ -10,23 +10,23 @@ import kotlinx.coroutines.launch
 import model.AppState
 import model.User
 import model.UsersScreenState
-import service.Dispatch
-import service.MiddleWare
-import service.Reducer
-import service.Store
+import store.Dispatch
+import store.MiddleWare
+import store.Reducer
+import store.Store
 import service.UserService
 
 class UsersViewModel(
-    store: Store,
+    store: Store ,
     private val userService: UserService
 ):ViewModel() {
 
-    private var dispatch:Dispatch?=null
+    private var dispatch: Dispatch?=null
     val usersState=store.getCurrentState { dispatch=it }
         .map { it.usersScreenState }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UsersScreenState())
 
-    private val usersReducer:Reducer<UsersScreenState> = {old, action ->
+    private val usersReducer: Reducer<UsersScreenState> = { old , action ->
         when(action){
             is UsersAction.UsersList->{
                 old.copy(users = action.users)
@@ -53,11 +53,11 @@ class UsersViewModel(
         }
     }
 
-    private val appReducer:Reducer<AppState> = {old, action ->
+    private val appReducer: Reducer<AppState> = { old , action ->
         old.copy(usersScreenState = usersReducer(old.usersScreenState,action))
     }
 
-    private val middleWare:MiddleWare = {state, action, dispatch, next ->
+    private val middleWare: MiddleWare = { state , action , dispatch , next ->
         when(action){
             UsersAction.GetUsers->{
                 viewModelScope.launch {

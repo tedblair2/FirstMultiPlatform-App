@@ -1,6 +1,6 @@
 package event
 
-import service.Action
+import store.Action
 
 sealed interface CounterAction: Action {
     data object Init:CounterAction

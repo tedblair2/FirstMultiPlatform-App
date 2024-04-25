@@ -16,9 +16,14 @@ junit = "4.13.2"
 kotlin = "1.9.22"
 kotlinx-time-version="0.6.0-RC.2"
 koin-version="3.5.3"
+koin-compose-version="1.1.5"
 lifecycleRuntimeKtx = "2.7.0"
 apollo-version="4.0.0-beta.5"
 sql-delight-version="2.0.0"
+kotlin-serialization-version="1.6.3"
+decompose-version="2.2.2"
+precompose-version="1.6.0"
+voyager = "1.0.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -38,16 +43,28 @@ kotlinx-datetime={module="org.jetbrains.kotlinx:kotlinx-datetime",version.ref="k
 koin={module="io.insert-koin:koin-core",version.ref="koin-version"}
 koin-android={module="io.insert-koin:koin-android",version.ref="koin-version"}
 koin-compose={module="io.insert-koin:koin-androidx-compose",version.ref="koin-version"}
+koin-compose-multi={module="io.insert-koin:koin-compose",version.ref="koin-compose-version"}
 apollo= {module="com.apollographql.apollo3:apollo-runtime",version.ref="apollo-version"}
 sqlDelight-runtime={module="app.cash.sqldelight:runtime",version.ref="sql-delight-version"}
 sqlDelight-android-driver={module="app.cash.sqldelight:android-driver",version.ref="sql-delight-version"}
 sqlDelight-jvm-driver={module="app.cash.sqldelight:sqlite-driver",version.ref="sql-delight-version"}
 sqlDelight-coroutines-extentions={module="app.cash.sqldelight:coroutines-extensions",version.ref="sql-delight-version"}
+kotlin-serialization={module="org.jetbrains.kotlinx:kotlinx-serialization-json",version.ref="kotlin-serialization-version"}
+decompose={module="com.arkivanov.decompose:decompose",version.ref="decompose-version"}
+decompose-jetbrains-extentions={module="com.arkivanov.decompose:extensions-compose-jetbrains",version.ref="decompose-version"}
+precompose={module="moe.tlaster:precompose",version.ref="precompose-version"}
+precompose-viewmodel={module="moe.tlaster:precompose-viewmodel",version.ref="precompose-version"}
+precompose-koin={module="moe.tlaster:precompose-koin",version.ref="precompose-version"}
+voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
+voyager-screenModel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
+voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
+voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization-plugin={id="org.jetbrains.kotlin.plugin.serialization",version.ref="kotlin"}
 apollo-plugin={ id="com.apollographql.apollo3", version.ref="apollo-version"}
 sqlDelight-plugin={id="app.cash.sqldelight",version.ref="sql-delight-version"}
