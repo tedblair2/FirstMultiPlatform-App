@@ -2,6 +2,9 @@ package di
 
 import com.apollographql.apollo3.ApolloClient
 import com.github.tedblair2.db.AppDatabase
+import datastore.UserSettingsScreenModel
+import datastore.UserSettingsService
+import datastore.UserSettingsServiceImpl
 import org.koin.dsl.module
 import precompose.viewmodel.AddUserViewModel
 import precompose.viewmodel.SqlUsersViewModel
@@ -48,5 +51,11 @@ val commonModule= module {
     }
     factory {
         AddUserScreenModel(get(),get())
+    }
+    single<UserSettingsService> {
+        UserSettingsServiceImpl(get())
+    }
+    factory {
+        UserSettingsScreenModel(get())
     }
 }

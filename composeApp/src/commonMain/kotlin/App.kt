@@ -56,7 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.transitions.SlideTransition
+import datastore.screen.DataStoreExampleScreen
 import event.CounterAction
 import event.CountriesAction
 import event.UsersAction
@@ -86,16 +86,16 @@ import sqlDelight.events.UsersScreenActions
 import sqlDelight.model.AddUserScreenState
 import sqlDelight.model.SqlUsersScreenState
 import theme.AppTheme
-import voyager.screen.HomeScreen
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 @Preview
 fun App() {
     AppTheme {
-        Navigator(HomeScreen()){
-            SlideTransition(it)
-        }
+        Navigator(DataStoreExampleScreen())
+//        Navigator(HomeScreen()){
+//            SlideTransition(it)
+//        }
     }
 
 //    PreComposeApp {

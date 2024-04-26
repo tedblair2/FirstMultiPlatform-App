@@ -66,6 +66,8 @@ kotlin {
             implementation(libs.voyager.screenModel)
             implementation(libs.voyager.koin)
             implementation(libs.voyager.transitions)
+            //datastore
+            implementation(libs.datastore)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

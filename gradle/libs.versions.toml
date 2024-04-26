@@ -24,6 +24,7 @@ kotlin-serialization-version="1.6.3"
 decompose-version="2.2.2"
 precompose-version="1.6.0"
 voyager = "1.0.0"
+datastore-version="1.1.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -59,6 +60,7 @@ voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.
 voyager-screenModel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
 voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
 voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
+datastore={module="androidx.datastore:datastore-core",version.ref="datastore-version"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
